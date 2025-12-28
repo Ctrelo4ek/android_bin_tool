@@ -1,0 +1,111 @@
+# 编译工具链及其区别：
+# 1. arm-linux-gnueabi-
+#    - 适用架构：32位 ARM（ARMv4, ARMv5, ARMv6, ARMv7）
+#    - 浮点支持：软浮点（不支持硬浮点）
+#
+# 2. arm-linux-gnueabihf-
+#    - 适用架构：32位 ARM（ARMv7）
+#    - 浮点支持：硬浮点（支持硬浮点）
+#
+# 3. armv8l-linux-gnueabihf-
+#    - 适用架构：32位 ARM（ARMv8 32位模式）
+#    - 浮点支持：硬浮点（支持硬浮点）
+#
+# 4. aarch64-linux-gnu-
+#    - 适用架构：64位 ARM（ARMv8 64位模式）
+#    - 浮点支持：硬浮点（默认支持硬浮点）
+
+# NEON（高级SIMD）：
+# - 用于多媒体和信号处理任务（图像处理、音频处理、视频编解码）。
+# - 支持8位、16位、32位和64位整数，以及单精度浮点数。
+# - 提供并行处理（SIMD：单指令多数据）。
+# - 丰富的多媒体和信号处理指令集。
+# - 16个128位寄存器（Q0-Q15），每个寄存器可以分为多个部分。
+# - 优化多媒体和信号处理性能。
+
+# VFP（向量浮点）：
+# - 用于浮点运算（科学计算、图形处理）。
+# - 支持单精度（32位）和双精度（64位）浮点数。
+# - 提供标量和向量操作。
+# - 浮点运算指令。
+# - 32个64位寄存器（D0-D31），每个寄存器可以分为多个部分。
+# - 提供硬件加速的浮点运算。
+
+# arm-linux-gnueabi- 编译链
+# 软浮点
+arm-linux-gnueabi-gcc --static -o float_test_sf_arm-linux-gnueabi.bin float_test.c -mfloat-abi=soft
+
+# 硬浮点使用 NEON（不支持）
+#arm-linux-gnueabi-gcc --static -o float_test_neon_arm-linux-gnueabi.bin float_test.c -mfpu=neon -mfloat-abi=hard
+# 不支持硬浮点，无法编译
+
+# 硬浮点使用 VFPv3（不支持）
+#arm-linux-gnueabi-gcc --static -o float_test_vfpv3_arm-linux-gnueabi.bin float_test.c -mfpu=vfpv3 -mfloat-abi=hard
+# 不支持硬浮点，无法编译
+
+# arm-linux-gnueabihf- 编译链
+# 软浮点（需要工具链支持）
+#arm-linux-gnueabihf-gcc --static -o float_test_sf_arm-linux-gnueabihf.bin float_test.c -mfloat-abi=soft
+# 如果工具链不支持软浮点，可能会编译报错：
+# fatal error: gnu/stubs-soft.h: No such file or directory
+# 预期文件路径：${TOOLCHAIN_PATH}/armv8l-linux-gnueabihf/libc/usr/include/gnu/stubs-soft.h
+
+# 硬浮点使用 NEON
+arm-linux-gnueabihf-gcc --static -o float_test_neon_arm-linux-gnueabihf.bin float_test.c -mfpu=neon -mfloat-abi=hard
+
+# 硬浮点使用 VFPv3
+arm-linux-gnueabihf-gcc --static -o float_test_vfpv3_arm-linux-gnueabihf.bin float_test.c -mfpu=vfpv3 -mfloat-abi=hard
+
+# armv8l-linux-gnueabihf- 编译链
+# 软浮点（需要工具链支持）
+#armv8l-linux-gnueabihf-gcc --static -o float_test_sf_armv8l-linux-gnueabihf.bin float_test.c -mfloat-abi=soft
+# 如果工具链不支持软浮点，可能会编译报错：
+# fatal error: gnu/stubs-soft.h: No such file or directory
+# 预期文件路径：${TOOLCHAIN_PATH}/armv8l-linux-gnueabihf/libc/usr/include/gnu/stubs-soft.h
+
+# 硬浮点使用 NEON
+armv8l-linux-gnueabihf-gcc --static -o float_test_neon_armv8l-linux-gnueabihf.bin float_test.c -mfpu=neon -mfloat-abi=hard
+
+# 硬浮点使用 VFPv3
+armv8l-linux-gnueabihf-gcc --static -o float_test_vfpv3_armv8l-linux-gnueabihf.bin float_test.c -mfpu=vfpv3 -mfloat-abi=hard
+
+# aarch64-linux-gnu- 编译链
+# 软浮点（不适用）
+#aarch64-linux-gnu-gcc --static -o float_test_sf_aarch64-linux-gnu.bin float_test.c -mfloat-abi=soft
+# 不适用于 64 位 ARM，无法编译
+
+# 硬浮点 （默认启用,不支持abi -mfpu）
+aarch64-linux-gnu-gcc --static -o float_test_aarch64-linux-gnu.bin float_test.c
+
+
+# sh run.sh                                           
+# -------------------- Starting float_test_aarch64-linux-gnu test --------------------
+# Starting float performance test...
+# Float performance test completed in 0.406225 seconds
+# Starting double performance test...
+# Double performance test completed in 0.404120 seconds
+# -------------------- Starting float_test_neon_arm-linux-gnueabihf test --------------------
+# Starting float performance test...
+# Float performance test completed in 0.403944 seconds
+# Starting double performance test...
+# Double performance test completed in 0.404011 seconds
+# -------------------- Starting float_test_neon_armv8l-linux-gnueabihf test --------------------
+# Starting float performance test...
+# Float performance test completed in 0.402952 seconds
+# Starting double performance test...
+# Double performance test completed in 0.402666 seconds
+# -------------------- Starting float_test_sf_arm-linux-gnueabi test --------------------
+# Starting float performance test...
+# Float performance test completed in 4.459488 seconds
+# Starting double performance test...
+# Double performance test completed in 6.457946 seconds
+# -------------------- Starting float_test_vfpv3_arm-linux-gnueabihf test --------------------
+# Starting float performance test...
+# Float performance test completed in 0.404119 seconds
+# Starting double performance test...
+# Double performance test completed in 0.403570 seconds
+# -------------------- Starting float_test_vfpv3_armv8l-linux-gnueabihf test --------------------
+# Starting float performance test...
+# Float performance test completed in 0.402800 seconds
+# Starting double performance test...
+# Double performance test completed in 0.402232 seconds

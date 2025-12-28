@@ -1,0 +1,24 @@
+lscpu
+cat /proc/cpuinfo
+gcc -march=native -Q --help=target
+
+gcc -o test_hardfloat.bin test_float.c -mfpu=neon -mfloat-abi=hard
+gcc -o test_softfloat.bin test_float.c -mfloat-abi=soft
+
+objdump -t test_hardfloat.bin | grep -i 'vfp\|float'
+objdump -x test_hardfloat.bin | grep Tag_ABI_VFP_args
+readelf -A test_hardfloat.bin
+root@N1:~# file test_softfloat.bin 
+test_softfloat.bin: ELF 32-bit LSB executable, ARM, EABI5 version 1 (GNU/Linux), statically linked, for GNU/Linux 3.2.0, BuildID[sha1]=7e51c0d9922306064226c9d2f2d5f28ed0d1d149, not stripped
+
+objdump -t test_softfloat.bin | grep -i 'vfp\|float'
+objdump -x test_softfloat.bin | grep Tag_ABI_VFP_args
+readelf -A test_softfloat.bin
+root@N1:~# file test_softfloat.bin 
+test_softfloat.bin: ELF 32-bit LSB executable, ARM, EABI5 version 1 (GNU/Linux), statically linked, for GNU/Linux 3.2.0, BuildID[sha1]=7e51c0d9922306064226c9d2f2d5f28ed0d1d149, not stripped
+
+root@N1:~# ./test_hardfloat.bin 
+Time taken: 1.148749 seconds
+
+root@N1:~# ./test_softfloat.bin 
+Time taken: 3.420869 seconds
